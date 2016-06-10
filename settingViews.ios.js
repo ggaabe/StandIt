@@ -29,9 +29,21 @@ const styles = StyleSheet.create({
 );
 
   const STORAGE_KEY = "settingsKey";
+  const HEIGHT_KEY = "heightKey";
+  var defaultSettings = JSON.stringify({"height": 1.75, "weight": 170, "age": 25, units: ["meters", "pounds"], "goal": 50});
+
   console.warn(AsyncStorage);
 
 class Settings extends Component {
+
+  constructor(props: Object): void {
+       super(props);
+       this.state = {
+         height: '',
+         weight: '',
+         age: '',
+       };
+   }
 
   navHeight(){
     this.props.navigator.push({
@@ -91,21 +103,25 @@ class Settings extends Component {
 
   async _loadInitialState() {
     try {
-      var value = await AsyncStorage.getItem(STORAGE_KEY);
+      AsyncStorage.getItem(STORAGE_KEY).then((value) => {
       if (value !== null){
         //this.setState({selectedValue: value});
         value = JSON.parse(value);
-        this._appendMessage('Recovered selection from disk: ' + Object.keys(value));
-        //console.warn("HEIGHT: " + value.height);
-        this.setState({"height": value.height});
-        for (var property in this.state){
-          console.warn(this.state.height);
-        }
+        this._appendMessage('Recovered selection from disk: ' + value);
+        console.warn("HEIGHT: " + value.height);
+
+        this.setState({height: value.height});
+        // for (var property in this.state){
+        //   console.warn(this.state.height);
+        // }
       } else {
-        var defaultSettings = JSON.stringify({"height": 1.75, "weight": 170, "age": 25, units: ["meters", "pounds"], "goal": 50});
-        await AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
+        var defaultHeight = "175";
+        AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSettings));
         this._appendMessage('Initialized with no selection on disk.');
       }
+     }
+     );
     } catch (error) {
       this._appendMessage('AsyncStorage error: ' + error.message);
     }
@@ -115,20 +131,12 @@ class Settings extends Component {
     console.warn(message);
   }
 
-  getInitialState(){
-    return{
-      height: 0,
-      weight: 0,
-      age: 0,
-    };
-  }
-
   render() {
     return (
 <ScrollView style={styles.container}>
     <TableView>
       <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)" style={styles.firstSection}>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={this.state} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={this.state.height} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Weight" detail="170 lbs" onPress={this.navWeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Age" detail="25 yrs" onPress={this.navAge.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail="Meters, Pounds" onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
