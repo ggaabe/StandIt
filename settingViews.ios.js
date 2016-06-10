@@ -6,6 +6,7 @@ import {
   ScrollView,
   Text,
   View,
+  TextInput,
 } from 'react-native';
 
 import {
@@ -17,6 +18,7 @@ import {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
       backgroundColor: 'rgb(24,24,26)',
     },
   firstSection: {
@@ -24,13 +26,28 @@ const styles = StyleSheet.create({
     borderTopWidth: 30,
     borderStyle: 'solid',
   },
-
+  settingInput: {
+    marginTop: 5,
+    marginLeft: 20,
+    flexDirection: 'row',
+  },
+  inputRow: {
+    marginTop: 5,
+    color: 'white',
+    fontSize: 20
+  },
+  inputRowRight: {
+    marginTop: 5,
+    color: 'white',
+    fontSize: 20,
+    marginLeft: 10,
+  }
   }
 );
 
   const STORAGE_KEY = "settingsKey";
   const HEIGHT_KEY = "heightKey";
-  var defaultSettings = JSON.stringify({"height": 1.75, "weight": 170, "age": 25, units: ["meters", "pounds"], "goal": 50});
+  var defaultSettings = JSON.stringify({"height": 1.75, "weight": 170, "age": 25, units: "Metric", "goal": 50});
 
   console.warn(AsyncStorage);
 
@@ -42,14 +59,25 @@ class Settings extends Component {
          height: '',
          weight: '',
          age: '',
+         units: '',
        };
+   }
+
+   updateHeight(height) {
+     this.setState({height: height});
    }
 
   navHeight(){
     this.props.navigator.push({
         title: 'Height',
         component: Height,
-        rightButtonTitle: 'Done',
+
+        rightButtonTitle: 'Save',
+        passProps: {
+          height: this.state.height,
+          units: this.state.units,
+          updateHeight: this.updateHeight,
+        },
         onRightButtonPress: () => {
           console.warn("hey whats up hello");
           this.props.navigator.pop()}
@@ -60,7 +88,7 @@ class Settings extends Component {
     this.props.navigator.push({
         title: 'Weight',
         component: Weight,
-        rightButtonTitle: 'Done',
+        rightButtonTitle: 'Save',
         onRightButtonPress: () => {
           console.warn("hey whats up hello");
           this.props.navigator.pop()}
@@ -71,7 +99,7 @@ class Settings extends Component {
     this.props.navigator.push({
         title: 'Age',
         component: Age,
-        rightButtonTitle: 'Done',
+        rightButtonTitle: 'Save',
         onRightButtonPress: () => {
           console.warn("hey whats up hello");
           this.props.navigator.pop()}
@@ -82,7 +110,7 @@ class Settings extends Component {
     this.props.navigator.push({
         title: 'Units',
         component: Units,
-        rightButtonTitle: 'Done',
+        rightButtonTitle: 'Save',
         onRightButtonPress: () => {
           console.warn("hey whats up hello");
           this.props.navigator.pop()}
@@ -107,17 +135,19 @@ class Settings extends Component {
       if (value !== null){
         //this.setState({selectedValue: value});
         value = JSON.parse(value);
-        this._appendMessage('Recovered selection from disk: ' + value);
-        console.warn("HEIGHT: " + value.height);
+        // this._appendMessage('Recovered selection from disk: ' + value);
+        // console.warn("HEIGHT: " + value.height);
+        var heightState = value.height + " m";
+        this.setState({height: value.height + " m",
+          weight: value.weight + " lbs",
+          age: value.age + " yrs",
+          units: value.units,
+        });
 
-        this.setState({height: value.height});
-        // for (var property in this.state){
-        //   console.warn(this.state.height);
-        // }
       } else {
         var defaultHeight = "175";
         AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(defaultSettings));
+        AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
         this._appendMessage('Initialized with no selection on disk.');
       }
      }
@@ -135,11 +165,12 @@ class Settings extends Component {
     return (
 <ScrollView style={styles.container}>
     <TableView>
+
       <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)" style={styles.firstSection}>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={this.state.height} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Weight" detail="170 lbs" onPress={this.navWeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Age" detail="25 yrs" onPress={this.navAge.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail="Meters, Pounds" onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={`${this.state.height} eters`} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Weight" detail={this.state.weight} onPress={this.navWeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Age" detail={this.state.age} onPress={this.navAge.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail={this.state.units} onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
     </Section>
       <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)">
         <Cell title="Suggested standup height:" accessoryColor="white" cellstyle="RightDetail" titleTextColor="#007AFF" detail="120 cm" onPress={() => console.log('open Help/FAQ')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
@@ -152,12 +183,40 @@ class Settings extends Component {
 }
 
 class Height extends Component{
+
+  //insert logic here to render a view based on whether the units setting is metric or imperial.
   render(){
+    if(this.props.units == "Metric"){
     return(
-      <View>
-        <Text>Height</Text>
+      <ScrollView style={styles.container}>
+        <View style={styles.settingInput}>
+        <Text style={styles.inputRow}>Height: </Text>
+          <TextInput ref="heightInput" autoFocus={true} placeholder={this.props.height} placeholderTextColor='white' keyboardType='decimal-pad' keyboardAppearance='dark' maxLength={4}
+            style={{height: 40, width: 200, color: 'white', borderColor: 'gray', borderWidth: 1, textAlign: 'right',}}
+         onChangeText={function(text){
+           //this.props.updateHeight(text);
+           console.warn(text);
+           console.warn(text);
+          // this.props.units = text;
+         }
+         }/>
+  <Text style={styles.inputRowRight}> m</Text>
       </View>
+</ScrollView>
     );
+  }
+  else{
+    return(
+      <ScrollView style={styles.container}>
+        <View style={styles.settingInput}>
+        <Text style={styles.inputRow}>Height: </Text>
+        <TextInput keyboardType='decimal-pad' autoFocus={true} keyboardAppearance='dark' placeholder={this.props.height} placeholderTextColor='white' maxLength='4' style={{height: 40, width: 200, color: 'white', borderColor: 'gray', borderWidth: 1}}
+    onChangeText={(text) => console.warn(text)}/>
+  <Text style={styles.inputRow}>lbs</Text>
+          </View>
+    </ScrollView>
+    );
+  }
   }
 }
 
