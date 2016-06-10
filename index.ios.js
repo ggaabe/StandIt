@@ -12,7 +12,7 @@ import {
   SegmentedControlIOS,
   TabBarIOS,
   NavigatorIOS,
-} from 'react-native'
+} from 'react-native';
 
  var Main = require('./main.ios');
  var Dashboard = require('./dashboard.ios');

@@ -6,7 +6,7 @@ View,
 Text,
   Image,
   Dimensions,
-} from 'react-native'
+} from 'react-native';
 'use strict';
 
 //var React = require('react-native');
