@@ -111,31 +111,6 @@ class Settings extends Component {
          AsyncStorage.setItem(METRIC_KEY, JSON.stringify(false));
        }
        });
-      //  AsyncStorage.getItem(STORAGE_KEY).then((value) => {
-      //  if (value !== null){
-      //    //this.setState({selectedValue: value});
-      //    value = JSON.parse(value);
-      //    for (var property in value){
-      //      console.warn(property);
-      //    }
-      //    console.warn(value);
-      //    // this._appendMessage('Recovered selection from disk: ' + value);
-      //    // console.warn("HEIGHT: " + value.height);
-      //    var heightState = value.height + " m";
-      //    this.setState({weight: value.weight,
-      //      age: value.age,
-      //      metric: value.metric,
-      //    });
-      //
-      //  } else {
-      //    var defaultHeight = "175";
-      //    //AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
-      //    AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
-      //    this.setState({height: 1.75, weight: 170, age: 25, metric: true});
-      //    this._appendMessage('Initialized with no selection on disk.');
-      //  }
-      // }
-      // );
      } catch (error) {
        this._appendMessage('AsyncStorage error: ' + error.message);
      }
@@ -195,7 +170,10 @@ class Settings extends Component {
         rightButtonTitle: 'Save',
         onRightButtonPress: () => {
           console.warn("hey whats up hello");
-          this.props.navigator.pop()}
+          this.props.navigator.pop()},
+        passProps: {
+          age: this.state.age,
+        }
     })
   }
 
@@ -315,7 +293,7 @@ class Height extends Component{
       cachedHeight = text;
     }
   }/>
-    <Text style={styles.inputRow}>lbs</Text>
+<Text style={styles.inputRow}> ft</Text>
     </View>
     </ScrollView>
     );
@@ -333,12 +311,22 @@ class Weight extends Component{
   }
 }
 
+var cachedAge;
 class Age extends Component{
   render(){
     return(
-      <View>
-        <Text>Age</Text>
+      <ScrollView style={styles.container}>
+        <View style={styles.settingInput}>
+        <Text style={styles.inputRow}>Age: </Text>
+          <TextInput ref="ageInput" autoFocus={true} placeholder={`${this.props.age}`} placeholderTextColor='white' keyboardType='decimal-pad' keyboardAppearance='dark' maxLength={4}
+            style={{height: 40, width: 200, color: 'white', borderColor: 'gray', borderWidth: 1, textAlign: 'right',}}
+         onChangeText={function(text){
+           cachedHeight = text;
+         }
+         }/>
+       <Text style={styles.inputRowRight}> yrs</Text>
       </View>
+</ScrollView>
     );
   }
 }
