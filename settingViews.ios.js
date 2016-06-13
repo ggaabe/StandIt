@@ -49,10 +49,13 @@ const styles = StyleSheet.create({
   const STORAGE_KEY = "settingsKey";
   const HEIGHT_KEY = "heightKey";
   const WEIGHT_KEY = "weightKey";
+  const AGE_KEY = "ageKey";
   const METRIC_KEY = "metricKey";
+  const GOAL_KEY = "goalKey";
   var defaultSettings = JSON.stringify({height: 1.75, weight: 170, age: 25, metric: true});
   console.warn(AsyncStorage);
 
+var settingsContext;
 
 class Settings extends Component {
 
@@ -62,9 +65,91 @@ class Settings extends Component {
          height: '',
          weight: '',
          age: '',
-         metric: '',
+         metric: false,
        };
+       settingsContext = this;
    }
+
+   componentDidMount() {
+         // AsyncStorage.getItem("height").then((value) => {
+         //     this.setState({"height": value});
+         // }).done();
+         this._loadInitialState().done();
+     }
+
+   async _loadInitialState() {
+     try {
+       AsyncStorage.getItem(HEIGHT_KEY).then((value) => {
+         if (value !== null){
+           this.setState({height: value});
+       }else{
+         this.setState({height: 1.75})
+         AsyncStorage.setItem(HEIGHT_KEY, "1.75");
+       }
+       });
+       AsyncStorage.getItem(WEIGHT_KEY).then((value) => {
+         if (value !== null){
+           this.setState({weight: value});
+       }else{
+         this.setState({weight: 170})
+         AsyncStorage.setItem(WEIGHT_KEY, "170");
+       }
+       });
+       AsyncStorage.getItem(AGE_KEY).then((value) => {
+         if (value !== null){
+           this.setState({age: value});
+       }else{
+         this.setState({age: 25})
+         AsyncStorage.setItem(AGE_KEY, "25");
+       }
+       });
+       AsyncStorage.getItem(METRIC_KEY).then((value) => {
+         if (value !== null){
+           this.setState({metric: JSON.parse(value)});
+       }else{
+         this.setState({metric: false})
+         AsyncStorage.setItem(METRIC_KEY, JSON.stringify(false));
+       }
+       });
+       AsyncStorage.getItem(STORAGE_KEY).then((value) => {
+       if (value !== null){
+         //this.setState({selectedValue: value});
+         value = JSON.parse(value);
+         for (var property in value){
+           console.warn(property);
+         }
+         console.warn(value);
+         // this._appendMessage('Recovered selection from disk: ' + value);
+         // console.warn("HEIGHT: " + value.height);
+         var heightState = value.height + " m";
+         this.setState({weight: value.weight,
+           age: value.age,
+           metric: value.metric,
+         });
+
+       } else {
+         var defaultHeight = "175";
+         //AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
+         AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
+         this.setState({height: 1.75, weight: 170, age: 25, metric: true});
+         this._appendMessage('Initialized with no selection on disk.');
+       }
+      }
+      );
+     } catch (error) {
+       this._appendMessage('AsyncStorage error: ' + error.message);
+     }
+   }
+
+   async setStorage(key, settings) {
+     try {
+       await AsyncStorage.setItem(key, settings);
+      }
+      catch (error) {
+       this._appendMessage('AsyncStorage error: ' + error.message);
+     }
+   }
+
 
    round(value, precision) {
        var multiplier = Math.pow(10, precision || 0);
@@ -114,21 +199,26 @@ class Settings extends Component {
     })
   }
 
-  updateUnits(value){
-    this.setState({metric: value});
-    this.setStorage(METRIC_KEY, value);
+  updateUnits(value, context){
+    console.warn("HEYYYYY")
+    context.setState({metric: value});
+    context.setStorage(METRIC_KEY, JSON.stringify(value));
   }
 
   navUnits(){
     this.props.navigator.push({
         title: 'Units',
         component: Units,
-        metric: this.state.metric,
         rightButtonTitle: 'Save',
-        unitsCallback: this.updateUnits,
         onRightButtonPress: () => {
-          console.warn("hey whats up hello");
-          this.props.navigator.pop()}
+          this.setState({metric: cachedUnit});
+          this.setStorage(METRIC_KEY, JSON.stringify(cachedUnit));
+          this.props.navigator.pop()},
+        passProps: {
+          updateUnits: this.updateUnits,
+          context: settingsContext,
+          metric: this.state.metric,
+        }
     })
   }
 
@@ -153,77 +243,32 @@ class Settings extends Component {
     })
   }
 
-  componentDidMount() {
-        // AsyncStorage.getItem("height").then((value) => {
-        //     this.setState({"height": value});
-        // }).done();
-        this._loadInitialState().done();
-    }
-
-  async _loadInitialState() {
-    try {
-      AsyncStorage.getItem(HEIGHT_KEY).then((value) => {
-        if (value !== null){
-          this.setState({height: value});
-      }else{
-        this.setState({height: 1.75})
-        AsyncStorage.setItem(HEIGHT_KEY, "1.75");
-      }
-      });
-      AsyncStorage.getItem(STORAGE_KEY).then((value) => {
-      if (value !== null){
-        //this.setState({selectedValue: value});
-        value = JSON.parse(value);
-        for (var property in value){
-          console.warn(property);
-        }
-        console.warn(value);
-        // this._appendMessage('Recovered selection from disk: ' + value);
-        // console.warn("HEIGHT: " + value.height);
-        var heightState = value.height + " m";
-        this.setState({weight: value.weight,
-          age: value.age,
-          metric: value.metric,
-        });
-
-      } else {
-        var defaultHeight = "175";
-        //AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
-        AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
-        this.setState({height: 1.75, weight: 170, age: 25, metric: true});
-        this._appendMessage('Initialized with no selection on disk.');
-      }
-     }
-     );
-    } catch (error) {
-      this._appendMessage('AsyncStorage error: ' + error.message);
-    }
-  }
-
-  async setStorage(key, settings) {
-    try {
-      await AsyncStorage.setItem(key, settings);
-     }
-     catch (error) {
-      this._appendMessage('AsyncStorage error: ' + error.message);
-    }
-  }
-
-
   _appendMessage(message) {
     console.warn(message);
   }
 
   render() {
+    var unitType;
+    var unitTypeDistance;
+    var unitTypeWeight;
+    if(this.state.metric){
+      unitType = "Metric";
+      unitTypeDistance = " m";
+      unitTypeWeight = " kg";
+    }else{
+      unitType = "Imperial";
+      unitTypeDistance = " ft";
+      unitTypeWeight = "lbs";
+    }
     return (
 <ScrollView style={styles.container}>
     <TableView>
 
       <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)" style={styles.firstSection}>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={`${this.state.height} eters`} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={`${this.state.height} ${unitTypeDistance}`} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Weight" detail={this.state.weight} onPress={this.navWeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Age" detail={this.state.age} onPress={this.navAge.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail={this.state.metric} onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+        <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail={`${unitType}`} onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
     </Section>
       <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)">
         <Cell title="Suggested standup height:" accessoryColor="white" cellstyle="RightDetail" titleTextColor="#007AFF" detail="120 cm" onPress={() => console.log('open Help/FAQ')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
@@ -264,7 +309,7 @@ class Height extends Component{
       <ScrollView style={styles.container}>
         <View style={styles.settingInput}>
         <Text style={styles.inputRow}>Height: </Text>
-        <TextInput keyboardType='decimal-pad' autoFocus={true} keyboardAppearance='dark' placeholder={this.props.height} placeholderTextColor='white' maxLength='4' style={{height: 40, width: 40, color: 'white', borderColor: 'gray', borderWidth: 1}}
+        <TextInput keyboardType='decimal-pad' autoFocus={true} keyboardAppearance='dark' placeholder={`${this.props.height}`} placeholderTextColor='white' maxLength='4' style={{height: 40, width: 40, color: 'white', borderColor: 'gray', borderWidth: 1}}
     onChangeText={function(text){
       //create two inputs.
       cachedHeight = text;
@@ -298,27 +343,33 @@ class Age extends Component{
   }
 }
 
+var cachedUnit;
 class Units extends Component{
+
   constructor(props: Object): void {
        super(props);
        this.state = {
-         metric: false,
+         metric: this.props.metric,
        };
-   }
+       cachedUnit = this.props.metric;
+    }
 
   render(){
-    this.setState({metric: this.props.metric});
+    //this.props.updateUnits(false, this.props.context);
+    console.warn(this.props.metric);
     return(
       <ScrollView style={styles.container}>
         <Text>Distance Units</Text>
           <Switch
             style={{marginBottom: 10}}
-            onValueChange={function(value){
-              this.setState({metric: value});
-              this.props.unitsCallback(value);
-
-              }}
-            value={true} />
+            onValueChange={
+              function(value){
+                cachedUnit = value;
+                console.warn(value);
+                this.setState({metric: value});
+              }.bind(this)
+            }
+            value={this.state.metric} />
         </ScrollView>
     );
   }
