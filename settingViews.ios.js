@@ -111,31 +111,31 @@ class Settings extends Component {
          AsyncStorage.setItem(METRIC_KEY, JSON.stringify(false));
        }
        });
-       AsyncStorage.getItem(STORAGE_KEY).then((value) => {
-       if (value !== null){
-         //this.setState({selectedValue: value});
-         value = JSON.parse(value);
-         for (var property in value){
-           console.warn(property);
-         }
-         console.warn(value);
-         // this._appendMessage('Recovered selection from disk: ' + value);
-         // console.warn("HEIGHT: " + value.height);
-         var heightState = value.height + " m";
-         this.setState({weight: value.weight,
-           age: value.age,
-           metric: value.metric,
-         });
-
-       } else {
-         var defaultHeight = "175";
-         //AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
-         AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
-         this.setState({height: 1.75, weight: 170, age: 25, metric: true});
-         this._appendMessage('Initialized with no selection on disk.');
-       }
-      }
-      );
+      //  AsyncStorage.getItem(STORAGE_KEY).then((value) => {
+      //  if (value !== null){
+      //    //this.setState({selectedValue: value});
+      //    value = JSON.parse(value);
+      //    for (var property in value){
+      //      console.warn(property);
+      //    }
+      //    console.warn(value);
+      //    // this._appendMessage('Recovered selection from disk: ' + value);
+      //    // console.warn("HEIGHT: " + value.height);
+      //    var heightState = value.height + " m";
+      //    this.setState({weight: value.weight,
+      //      age: value.age,
+      //      metric: value.metric,
+      //    });
+      //
+      //  } else {
+      //    var defaultHeight = "175";
+      //    //AsyncStorage.setItem(HEIGHT_KEY, defaultHeight);
+      //    AsyncStorage.setItem(STORAGE_KEY, defaultSettings);
+      //    this.setState({height: 1.75, weight: 170, age: 25, metric: true});
+      //    this._appendMessage('Initialized with no selection on disk.');
+      //  }
+      // }
+      // );
      } catch (error) {
        this._appendMessage('AsyncStorage error: ' + error.message);
      }
