@@ -32,9 +32,26 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     flexDirection: 'row',
   },
+  switchInput: {
+    marginTop: 5,
+    marginLeft: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
   inputRow: {
     marginTop: 5,
     color: 'white',
+    fontSize: 20
+  },
+  inputRowImperial: {
+    marginTop: 5,
+    color: 'rgb(0,163,46)',
+    fontSize: 20
+  },
+  inputRowMetric: {
+    marginTop: 5,
+    color: 'rgb(41,116,231)',
     fontSize: 20
   },
   inputRowRight: {
@@ -157,7 +174,7 @@ class Settings extends Component {
         component: Weight,
         rightButtonTitle: 'Save',
         onRightButtonPress: () => {
-          this.setState({height: cachedWeight});
+          this.setState({weight: cachedWeight});
           this.setStorage(WEIGHT_KEY, cachedWeight);
           this.props.navigator.pop()}
     })
@@ -169,7 +186,8 @@ class Settings extends Component {
         component: Age,
         rightButtonTitle: 'Save',
         onRightButtonPress: () => {
-          console.warn("hey whats up hello");
+          this.setState({age: cachedAge});
+          this.setStorage(AGE_KEY, cachedAge);
           this.props.navigator.pop()},
         passProps: {
           age: this.state.age,
@@ -318,10 +336,10 @@ class Age extends Component{
       <ScrollView style={styles.container}>
         <View style={styles.settingInput}>
         <Text style={styles.inputRow}>Age: </Text>
-          <TextInput ref="ageInput" autoFocus={true} placeholder={`${this.props.age}`} placeholderTextColor='white' keyboardType='decimal-pad' keyboardAppearance='dark' maxLength={4}
+          <TextInput ref="ageInput" autoFocus={true} placeholder={`${this.props.age}`} placeholderTextColor='rgb(123,123,129)' keyboardType='decimal-pad' keyboardAppearance='dark' maxLength={3}
             style={{height: 40, width: 200, color: 'white', borderColor: 'gray', borderWidth: 1, textAlign: 'right',}}
          onChangeText={function(text){
-           cachedHeight = text;
+           cachedAge = text;
          }
          }/>
        <Text style={styles.inputRowRight}> yrs</Text>
@@ -347,9 +365,10 @@ class Units extends Component{
     console.warn(this.props.metric);
     return(
       <ScrollView style={styles.container}>
-        <Text>Distance Units</Text>
+        <View style={styles.switchInput}>
+        <Text style={styles.inputRowMetric}>Metric</Text>
           <Switch
-            style={{marginBottom: 10}}
+            style={{marginLeft: 20, marginRight: 20}}
             onValueChange={
               function(value){
                 cachedUnit = value;
@@ -357,7 +376,11 @@ class Units extends Component{
                 this.setState({metric: value});
               }.bind(this)
             }
+            onTintColor='rgb(0,163,46)'
+            tintColor='rgb(41,116,231)'
             value={this.state.metric} />
+          <Text style={styles.inputRowImperial}>Imperial</Text>
+        </View>
         </ScrollView>
     );
   }
