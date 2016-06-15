@@ -9,10 +9,18 @@ var DeviceMotion = require('./DeviceMotion.ios');
 
 class Calibrate extends Component {
 
-  componentDidMount () {
+  constructor(props: Object): void {
+       super(props);
+       this.state = {
+         motionData: '',
+       };
+   }
+
+  componentWillMount () {
     DeviceMotion.startDeviceMotionUpdates(1000/60, (data) => {
+      console.log(data.attitude);
       this.setState({
-        motionData: data,
+        motionData: data.attitude,
       });
     });
   }
@@ -20,7 +28,8 @@ class Calibrate extends Component {
   render(){
     return(
       <ScrollView>
-        <Text>Place your phone on the floor.</Text>
+        <Text>Pitch: {this.state.motionData.pitch}</Text>
+        <Text>Yaw: {this.state.motionData.yaw}</Text>
       </ScrollView>
     );
   }

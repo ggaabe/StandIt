@@ -82,7 +82,6 @@ const styles = StyleSheet.create({
   const GOAL_KEY = "goalKey";
   var defaultSettings = JSON.stringify({height: 1.75, weight: 170, age: 25, metric: true});
 
-var settingsContext;
 var Calibrate = require('./calibrate.ios');
 
 class Settings extends Component {
@@ -94,8 +93,9 @@ class Settings extends Component {
          weight: '',
          age: '',
          metric: false,
+         suggestedStandingHeight: '',
+         suggestedSittingHeight: '',
        };
-       settingsContext = this;
    }
 
    componentWillMount() {
@@ -109,9 +109,17 @@ class Settings extends Component {
      try {
        AsyncStorage.getItem(HEIGHT_KEY).then((value) => {
          if (value !== null){
-           this.setState({height: value});
+           this.setState({
+             height: value,
+             suggestedStandingHeight: this.suggestedStandingHeight(value),
+             suggestedSittingHeight: this.suggestedSittingHeight(value)
+           });
+
        }else{
-         this.setState({height: 1.75})
+         var defaultHeight = 1.75;
+         this.setState({height: defaultHeight,
+           suggestedStandingHeight: this.suggestedStandingHeight(defaultHeight),
+           suggestedSittingHeight: this.suggestedSittingHeight(defaultHeight)})
          AsyncStorage.setItem(HEIGHT_KEY, "1.75");
        }
        });
@@ -153,10 +161,27 @@ class Settings extends Component {
      }
    }
 
-
    round(value, precision) {
        var multiplier = Math.pow(10, precision || 0);
        return Math.round(value * multiplier) / multiplier;
+   }
+
+   suggestedSittingHeight(userHeight){
+       if(userHeight <= 1.7526){
+           return 68.58;//27;
+       }
+       else {
+           return Math.round(20.065 * userHeight - 47.13);
+       }
+   }
+
+   suggestedStandingHeight(userHeight){
+       if(userHeight >= 1.7526 /*5.75 feet*/){
+           return 113.03;//41;
+       }
+       else {
+           return Math.round(21.77 * userHeight - 16.76);
+       }
    }
 
   navHeight(){
@@ -171,8 +196,11 @@ class Settings extends Component {
         },
         onRightButtonPress: () => {
           cachedHeight = this.round(cachedHeight, 2);
-          this.setState({height: cachedHeight});
-          this.setStorage(HEIGHT_KEY, cachedHeight);
+          this.setState({height: cachedHeight,
+            suggestedStandingHeight: this.suggestedStandingHeight(cachedHeight),
+            suggestedSittingHeight: this.suggestedSittingHeight(cachedHeight)
+          });
+          this.setStorage(HEIGHT_KEY, cachedHeight.toString());
           this.props.navigator.pop()}
     })
   }
@@ -188,7 +216,7 @@ class Settings extends Component {
         },
         onRightButtonPress: () => {
           this.setState({weight: cachedWeight});
-          this.setStorage(WEIGHT_KEY, cachedWeight);
+          this.setStorage(WEIGHT_KEY, cachedWeight.toString());
           this.props.navigator.pop()}
     })
   }
@@ -200,7 +228,7 @@ class Settings extends Component {
         rightButtonTitle: 'Save',
         onRightButtonPress: () => {
           this.setState({age: cachedAge});
-          this.setStorage(AGE_KEY, cachedAge);
+          this.setStorage(AGE_KEY, cachedAge.toString());
           this.props.navigator.pop()},
         passProps: {
           age: this.state.age,
@@ -255,9 +283,6 @@ class Settings extends Component {
         component: Calibrate,
         rightButtonTitle: '',
         passProps: {
-          updateUnits: this.updateUnits,
-          context: settingsContext,
-          metric: this.state.metric,
         }
     })
   }
@@ -270,35 +295,51 @@ class Settings extends Component {
     var unitType;
     var unitTypeDistance;
     var unitTypeWeight;
+    var unitTypeSuggestion;
     if(this.state.metric){
       unitType = "Metric";
       unitTypeDistance = " m";
+      unitTypeSuggestion = " cm"
       unitTypeWeight = " kg";
+      cachedWeight = Math.round(this.state.weight);
       return (
   <ScrollView style={styles.container}>
       <TableView>
 
         <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)" style={styles.firstSection}>
           <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Height" detail={`${this.state.height} ${unitTypeDistance}`} onPress={this.navHeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-          <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Weight" detail={`${this.state.weight} ${unitTypeWeight}`} onPress={this.navWeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+          <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Weight" detail={`${cachedWeight} ${unitTypeWeight}`} onPress={this.navWeight.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
           <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Age" detail={this.state.age} onPress={this.navAge.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
           <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail={`${unitType}`} onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
       </Section>
         <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)">
-          <Cell title="Suggested standup height:" accessoryColor="white" cellstyle="RightDetail" titleTextColor="#007AFF" detail="120 cm" onPress={() => console.log('open Help/FAQ')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-          <Cell title="Suggested sitting height:" cellstyle="RightDetail" titleTextColor="#007AFF" detail="69 cm" onPress={() => console.log('open Contact Us')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+          <Cell title="Suggested standup height:" accessoryColor="white" cellstyle="RightDetail" titleTextColor="#007AFF" detail={`${this.state.suggestedStandingHeight} ${unitTypeSuggestion}`} onPress={() => console.log('open Help/FAQ')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+          <Cell title="Suggested sitting height:" cellstyle="RightDetail" titleTextColor="#007AFF" detail={`${this.state.suggestedSittingHeight} ${unitTypeSuggestion}`}  onPress={() => console.log('open Contact Us')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         </Section>
       </TableView>
+      <View style={styles.calibrate}>
+      <TouchableHighlight underlayColor="white" onPress={this.navCalibrate.bind(this)}>
+      <Image
+        resizeMode='cover'
+        style={[styles.calibrateButton]}
+        source={require('./calibrate.png')}
+      />
+      </TouchableHighlight>
+  <Text style={styles.inputRow}>Calibrate</Text>
+    </View>
   </ScrollView>
       );
     }else{
       unitType = "Imperial";
       unitTypeDistance = " ft";
       unitTypeWeight = "lbs";
+      unitTypeSuggestion = " inches"
+      suggestedStandingImperial = Math.round(this.state.suggestedStandingHeight * 0.393701);
+      suggestedSittingImperial = Math.round(this.state.suggestedSittingHeight * 0.393701);
 
       cachedFeet = Math.floor((this.state.height * 39.701) /  12);
       cachedInches = Math.round((this.state.height * 39.701) % 12)
-      cachedWeight = this.state.weight * 2.2;
+      cachedWeight = Math.round(this.state.weight * 2.2);
       return (
   <ScrollView style={styles.container}>
       <TableView>
@@ -310,8 +351,8 @@ class Settings extends Component {
           <Cell cellstyle="RightDetail" accessory="DisclosureIndicator" title="Units" detail={`${unitType}`} onPress={this.navUnits.bind(this)} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
       </Section>
         <Section sectionTintColor="rgb(22,24,31)" separatorTintColor="rgb(29,28,29)">
-          <Cell title="Suggested standup height:" accessoryColor="white" cellstyle="RightDetail" titleTextColor="#007AFF" detail="120 cm" onPress={() => console.log('open Help/FAQ')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
-          <Cell title="Suggested sitting height:" cellstyle="RightDetail" titleTextColor="#007AFF" detail="69 cm" onPress={() => console.log('open Contact Us')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+          <Cell title="Suggested standup height:" accessoryColor="white" cellstyle="RightDetail" titleTextColor="#007AFF" detail={`${suggestedStandingImperial} ${unitTypeSuggestion}`} onPress={() => console.log('open Help/FAQ')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
+          <Cell title="Suggested sitting height:" cellstyle="RightDetail" titleTextColor="#007AFF" detail={`${suggestedSittingImperial} ${unitTypeSuggestion}`} onPress={() => console.log('open Contact Us')} titleTextColor="white" cellTextColor="rgb(20,19,19)"/>
         </Section>
 
       </TableView>
@@ -395,12 +436,12 @@ var cachedWeight;
 class Weight extends Component{
 
   render(){
-    cachedWeight = this.props.metric;
+    cachedWeight = this.props.weight;
     if(this.props.metric){
     return(
       <ScrollView style={styles.container}>
         <View style={styles.settingInput}>
-        <Text style={styles.inputRow}>Age: </Text>
+        <Text style={styles.inputRow}>Weight: </Text>
           <TextInput ref="ageInput" autoFocus={true} placeholder={`${this.props.weight}`} placeholderTextColor='rgb(123,123,129)' keyboardType='decimal-pad' keyboardAppearance='dark' maxLength={5}
             style={{height: 40, width: 200, color: 'white', borderColor: 'gray', borderWidth: 1, textAlign: 'right',}}
          onChangeText={function(text){
@@ -412,11 +453,11 @@ class Weight extends Component{
 </ScrollView>
     );}
     else{
-      var conversionToPounds = this.props.weight * 2.2;
+      var conversionToPounds = Math.round(this.props.weight * 2.2);
       return(
         <ScrollView style={styles.container}>
           <View style={styles.settingInput}>
-          <Text style={styles.inputRow}>Age: </Text>
+          <Text style={styles.inputRow}>Weight: </Text>
             <TextInput ref="ageInput" autoFocus={true} placeholder={`${conversionToPounds}`} placeholderTextColor='rgb(123,123,129)' keyboardType='decimal-pad' keyboardAppearance='dark' maxLength={5}
               style={{height: 40, width: 200, color: 'white', borderColor: 'gray', borderWidth: 1, textAlign: 'right',}}
            onChangeText={function(text){
