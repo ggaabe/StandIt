@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
   var defaultSettings = JSON.stringify({height: 1.75, weight: 170, age: 25, metric: true});
 
 var settingsContext;
+var Calibrate = require('./calibrate.ios');
 
 class Settings extends Component {
 
@@ -248,6 +249,19 @@ class Settings extends Component {
     })
   }
 
+  navCalibrate(){
+    this.props.navigator.push({
+        title: 'Calibrate',
+        component: Calibrate,
+        rightButtonTitle: '',
+        passProps: {
+          updateUnits: this.updateUnits,
+          context: settingsContext,
+          metric: this.state.metric,
+        }
+    })
+  }
+
   _appendMessage(message) {
     console.warn(message);
   }
@@ -302,7 +316,7 @@ class Settings extends Component {
 
       </TableView>
       <View style={styles.calibrate}>
-      <TouchableHighlight underlayColor="white" onPress={() => 1+1}>
+      <TouchableHighlight underlayColor="white" onPress={this.navCalibrate.bind(this)}>
       <Image
         resizeMode='cover'
         style={[styles.calibrateButton]}
@@ -465,8 +479,8 @@ class Units extends Component{
                 this.setState({metric: value});
               }.bind(this)
             }
-            onTintColor='rgb(0,163,46)'
-            tintColor='rgb(41,116,231)'
+            onTintColor='rgb(41,116,231)'
+            tintColor='rgb(0,163,46)'
             value={this.state.metric} />
           <Text style={styles.inputRowImperial}>Metric</Text>
         </View>
@@ -478,8 +492,8 @@ class Units extends Component{
 
 module.exports = {
   Settings: Settings,
-  Height: Height,
-  Weight: Weight,
-  Age: Age,
-  Units: Units,
+  // Height: Height,
+  // Weight: Weight,
+  // Age: Age,
+  // Units: Units,
 }

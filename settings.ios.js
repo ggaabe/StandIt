@@ -19,10 +19,6 @@ import {
 
 var SettingViews = require('./settingViews.ios');
 var Settings = SettingViews.Settings;
-var Height = SettingViews.Height;
-var Weight = SettingViews.Weight;
-var Age = SettingViews.Age;
-var Units = SettingViews.Units;
 
 var styles = StyleSheet.create({
   container: {
