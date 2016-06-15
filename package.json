@@ -8,6 +8,8 @@
   "dependencies": {
     "react": "^15.1.0",
     "react-native": "0.27.2",
+    "react-native-ble": "^1.0.3",
+    "react-native-ble-manager": "0.0.12",
     "react-native-tableview-simple": "^0.10.1"
   }
 }
