@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		000BA4F51D134E680097BED6 /* BLEManagerAsCentral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000BA4F41D134E680097BED6 /* BLEManagerAsCentral.swift */; };
+		000BA5031D1352250097BED6 /* BLEManagerAsCentral.m in Sources */ = {isa = PBXBuildFile; fileRef = 000BA5021D1352250097BED6 /* BLEManagerAsCentral.m */; };
 		0099C5181D11A53800F231DC /* RNTDeviceMotion.m in Sources */ = {isa = PBXBuildFile; fileRef = 0099C5171D11A53800F231DC /* RNTDeviceMotion.m */; };
 		0099C53C1D12029E00F231DC /* libBleManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0099C5311D1201B900F231DC /* libBleManager.a */; };
 		0099C55A1D121B2900F231DC /* libRNBLE.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0099C5571D12189900F231DC /* libRNBLE.a */; };
@@ -122,6 +124,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		000BA4F31D134E680097BED6 /* StdIt-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "StdIt-Bridging-Header.h"; sourceTree = "<group>"; };
+		000BA4F41D134E680097BED6 /* BLEManagerAsCentral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BLEManagerAsCentral.swift; sourceTree = "<group>"; };
+		000BA5021D1352250097BED6 /* BLEManagerAsCentral.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BLEManagerAsCentral.m; path = StdIt/BLEManagerAsCentral.m; sourceTree = "<group>"; };
 		008F07F21AC5B25A0029DE68 /* main.jsbundle */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = main.jsbundle; sourceTree = "<group>"; };
 		0099C5161D11A53800F231DC /* RNTDeviceMotion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNTDeviceMotion.h; sourceTree = "<group>"; };
 		0099C5171D11A53800F231DC /* RNTDeviceMotion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNTDeviceMotion.m; sourceTree = "<group>"; };
@@ -277,7 +282,10 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
+				000BA4F31D134E680097BED6 /* StdIt-Bridging-Header.h */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				000BA4F41D134E680097BED6 /* BLEManagerAsCentral.swift */,
+				000BA5021D1352250097BED6 /* BLEManagerAsCentral.m */,
 				0099C5161D11A53800F231DC /* RNTDeviceMotion.h */,
 				0099C5171D11A53800F231DC /* RNTDeviceMotion.m */,
 			);
@@ -393,6 +401,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 610;
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
@@ -610,6 +619,8 @@
 				0099C5181D11A53800F231DC /* RNTDeviceMotion.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				000BA4F51D134E680097BED6 /* BLEManagerAsCentral.swift in Sources */,
+				000BA5031D1352250097BED6 /* BLEManagerAsCentral.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -679,6 +690,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				DEAD_CODE_STRIPPING = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -698,6 +710,8 @@
 					"-lc++",
 				);
 				PRODUCT_NAME = StdIt;
+				SWIFT_OBJC_BRIDGING_HEADER = "StdIt-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -705,6 +719,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
@@ -723,6 +738,7 @@
 					"-lc++",
 				);
 				PRODUCT_NAME = StdIt;
+				SWIFT_OBJC_BRIDGING_HEADER = "StdIt-Bridging-Header.h";
 			};
 			name = Release;
 		};
