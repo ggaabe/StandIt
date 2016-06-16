@@ -12,9 +12,16 @@ var DeviceMotion = require('./DeviceMotion.ios');
 var noble = require('react-native-ble');
 
 const peripheralId = "85329480-7A7F-32BF-91A2-FFAF31510A96";
-const uartServiceUUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const uartServiceUUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 const txCharacteristicUUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
 const rxCharacteristicUUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+var peripheralsArray = [];
+var servicesArray = [];
+var characteristicsArray = [];
+
+var txCharacteristic;
+var txFound = false;
 
 class Calibrate extends Component {
 
@@ -26,11 +33,15 @@ class Calibrate extends Component {
    }
 
   componentWillMount () {
-    noble.startScanning();
+    try{
+      noble.startScanning([uartServiceUUID], true);
+  }catch(error){
+    console.log("bluetooth not on");
+  }
     noble.on('stateChange', function(state) {
   if (state === 'poweredOn') {
     console.log("Scanning");
-    noble.startScanning();
+    noble.startScanning([uartServiceUUID], true);
   } else {
     console.log("NOT SCANNING");
     noble.stopScanning();
@@ -59,7 +70,7 @@ if (txPowerLevel) {
 }
 
 if (manufacturerData) {
-  console.log('  Manufacturer Data = ' + manufacturerData.toString('hex'));
+  console.log('  Manufacturer Data = ');
 }
 
 if (serviceData) {
@@ -70,35 +81,27 @@ if (serviceUuids) {
   console.log('  Service UUIDs     = ' + serviceUuids);
 }
 
-console.log();
-
 peripheral.connect(function(error) {
-    peripheral.discoverServices([], function(error, services) {
+    console.log("connected to peripheral!")
+    peripheral.discoverServices([uartServiceUUID], function(error, services) {
       var serviceIndex = 0;
+      console.log("found service! " + services[0]);
+      services[0].discoverCharacteristics([txCharacteristicUUID], function(error, characteristics) {
+          var characteristicIndex = 0;
+          console.log("found characteristic");
+          txCharacteristic = characteristics[0];
+          txFound = true;
+        });
 
-      // async.whilst(
-      //   function () {
-      //     return (serviceIndex < services.length);
-      //   },
-      //   function(callback) {
-      //     var service = services[serviceIndex];
-      //     var serviceInfo = service.uuid;
-      //
-      //     if (service.name) {
-      //       serviceInfo += ' (' + service.name + ')';
-      //     }
-      //     console.log(serviceInfo);
-      //
-      //     service.discoverCharacteristics([], function(error, characteristics) {
-      //       var characteristicIndex = 0;
-      //
-      //     });
-      //   },
-      //   function (err) {
-      //     peripheral.disconnect();
-      //   }
-      // );
+      services[0].once('characteristicsDiscover', function(characteristics){
+        //console.log(characteristics[0]);
+      });
     });
+  });
+
+  peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics){
+    console.log("CHARACTERISTICS!");
+    //console.log(characteristics[0]);
   });
 }
 //explore(peripheral);
@@ -109,6 +112,13 @@ peripheral.connect(function(error) {
       this.setState({
         motionData: data.attitude,
       });
+      if(txFound){
+        console.log('write');
+        var dataBuffer = new Buffer(1);
+        txCharacteristic.write(dataBuffer, true,function(error){
+          console.log(error);
+        });
+      }
     });
   }
 
