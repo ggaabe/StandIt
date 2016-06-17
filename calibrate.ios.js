@@ -28,8 +28,8 @@ var characteristicsArray = [];
 var txCharacteristic;
 var txFound = false;
 var floorMode = true;
-var cachedFloorCalibration;
-var cachedTableCalibration;
+var cachedFloorCalibrationOffset;
+//var cachedTableCalibration;
 
 class Calibrate extends Component {
 
@@ -80,10 +80,19 @@ NativeAppEventEmitter.addListener(
         motionData: data.attitude,
       });
       if(txFound){
-
-        BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
-          console.log("holy fuck.");
+        //var writeData = Buffer("Good lord").toString('base64');
+        var rollAdjusted = this.state.motionData.roll - cachedFloorCalibrationOffset.roll;
+        var pitchAdjusted = this.state.motionData.pitch - cachedFloorCalibrationOffset.pitch;
+        var rollAdjusted = this.round(rollAdjusted, 4);
+        var pitchAdjusted = this.round(pitchAdjusted, 4);
+        var writeString = "R" + rollAdjusted.toString() + "P" + pitchAdjusted.toString();
+        var writeData = Buffer(writeString).toString('base64');
+        //can probably run this until difference between state.pitch/roll and adjusted pitch/roll is less than 0.01
+        //at which point we set the calibrate button's isLoading to false.
+        BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, writeData).then(() => {
+          console.log("write successful.");
         });
+        //IMPLEMENT CONTROL LOGIC HERE TO READ FROM RXCHARACTERISTIC TO RECEIVE THE DONE MESSAGE.
       }
     });
   }
@@ -107,13 +116,14 @@ NativeAppEventEmitter.addListener(
                 buttonDisabled: true,
               });
               setTimeout(function(){
-                //cachedFloorCalibration = this.state.motionData;
+                cachedFloorCalibrationOffset = this.state.motionData;
                 this.setState({
                   buttonDisabled: false,
                   buttonLoading: false,
                   instructions: "Now, place your phone on the table, and push the Calibrate button. Do not touch the phone until the table has stopped moving.",
                   buttonText: "Calibrate Table"
                 });
+                floorMode = false;
               }.bind(this), 3000)
             }else{
               this.setState({
@@ -121,7 +131,6 @@ NativeAppEventEmitter.addListener(
                 buttonDisabled: true,
               });
               setTimeout(function(){
-                //cachedFloorCalibration = this.state.motionData;
                 this.setState({
                   // buttonDisabled: false,
                   // buttonLoading: false,
