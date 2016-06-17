@@ -3,8 +3,10 @@ import {
   View,
   ScrollView,
   Text,
+  StyleSheet,
   NativeAppEventEmitter,
 } from 'react-native';
+import Button from 'apsl-react-native-button';
 
 'use-strict';
 
@@ -25,13 +27,20 @@ var characteristicsArray = [];
 
 var txCharacteristic;
 var txFound = false;
+var floorMode = true;
+var cachedFloorCalibration;
+var cachedTableCalibration;
 
 class Calibrate extends Component {
 
   constructor(props: Object): void {
        super(props);
        this.state = {
-         motionData: '',
+         motionData: '3',
+         buttonLoading: false,
+         buttonDisabled: false,
+         instructions: "Place your phone on the floor, and then push the Calibrate button.",
+         buttonText: "Calibrate Phone",
        };
    }
 
@@ -65,19 +74,164 @@ NativeAppEventEmitter.addListener(
     }
 );
 
-  //   try{
-  //     noble.startScanning([uartServiceUUID], true);
-  // }catch(error){
-  //   console.log("bluetooth not on");
-  // }
-  //   noble.on('stateChange', function(state) {
-  // if (state === 'poweredOn') {
-  //   console.log("Scanning");
-  //   noble.startScanning([uartServiceUUID], true);
-  // } else {
-  //   console.log("NOT SCANNING");
-  //   noble.stopScanning();
-  // }
+    DeviceMotion.startDeviceMotionUpdates(1000/100, (data) => {
+      //console.log(data.attitude);
+      this.setState({
+        motionData: data.attitude,
+      });
+      if(txFound){
+
+        BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
+          console.log("holy fuck.");
+        });
+      }
+    });
+  }
+
+  round(value, precision) {
+      var multiplier = Math.pow(10, precision || 0);
+      return Math.round(value * multiplier) / multiplier;
+  }
+
+  render(){
+    //BleManager.connect(peripheralId);
+    return(
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.textStyle}>{this.state.instructions} {this.state.motionData.pitch}</Text>
+          <Button style={styles.buttonStyle5} textStyle={{fontSize: 18}}
+            isLoading={this.state.buttonLoading} isDisabled={this.state.buttonDisabled}
+            onPress={function(){
+            if(floorMode){
+              this.setState({
+                buttonLoading: true,
+                buttonDisabled: true,
+              });
+              setTimeout(function(){
+                //cachedFloorCalibration = this.state.motionData;
+                this.setState({
+                  buttonDisabled: false,
+                  buttonLoading: false,
+                  instructions: "Now, place your phone on the table, and push the Calibrate button. Do not touch the phone until the table has stopped moving.",
+                  buttonText: "Calibrate Table"
+                });
+              }.bind(this), 3000)
+            }else{
+              this.setState({
+                buttonLoading: true,
+                buttonDisabled: true,
+              });
+              setTimeout(function(){
+                //cachedFloorCalibration = this.state.motionData;
+                this.setState({
+                  // buttonDisabled: false,
+                  // buttonLoading: false,
+                  instructions: "Do not touch the phone until the table has stopped moving.",
+                  buttonText: "Done!"
+                });
+                txFound = true;
+              }.bind(this), 3000)
+             }
+            }.bind(this)
+
+          }
+            >
+            {this.state.buttonText}
+          </Button>
+
+      </ScrollView>
+    );
+  }
+}
+
+module.exports = Calibrate
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    //justifyContent: 'center',
+    backgroundColor: 'rgb(24,24,26)',
+    alignItems: 'center',
+
+  },
+  textStyle: {
+    marginTop: 5,
+    fontSize: 20,
+    color: 'white',
+    textAlign: 'center',
+  },
+  textStyle6: {
+    color: '#8e44ad',
+    fontFamily: 'Avenir',
+    fontWeight: 'bold'
+  },
+  buttonStylePressing: {
+    borderColor: 'red',
+    backgroundColor: 'red'
+  },
+  buttonStyle: {
+    borderColor: '#f39c12',
+    backgroundColor: '#f1c40f'
+  },
+  buttonStyle1: {
+    borderColor: '#d35400',
+    backgroundColor: '#e98b39'
+  },
+  buttonStyle2: {
+    borderColor: '#c0392b',
+    backgroundColor: '#e74c3c'
+  },
+  buttonStyle3: {
+    borderColor: '#16a085',
+    backgroundColor: '#1abc9c'
+  },
+  buttonStyle4: {
+    borderColor: '#27ae60',
+    backgroundColor: '#2ecc71'
+  },
+  buttonStyle5: {
+    borderColor: '#2980b9',
+    backgroundColor: '#3498db',
+    marginTop: 50,
+    marginLeft: 50,
+    marginRight: 50,
+    borderRadius: 0,
+  },
+  buttonStyle6: {
+    borderColor: '#8e44ad',
+    backgroundColor: '#9b59b6'
+  },
+  buttonStyle7: {
+    borderColor: '#8e44ad',
+    backgroundColor: 'white',
+    borderRadius: 0,
+    borderWidth: 3,
+  },
+  buttonStyle8: {
+    backgroundColor: 'white',
+    borderColor: '#333',
+    borderWidth: 2,
+    borderRadius: 22,
+  },
+  textStyle8: {
+    fontFamily: 'Avenir Next',
+    fontWeight: '500',
+    color: '#333',
+  }
+})
+
+//   try{
+//     noble.startScanning([uartServiceUUID], true);
+// }catch(error){
+//   console.log("bluetooth not on");
+// }
+//   noble.on('stateChange', function(state) {
+// if (state === 'poweredOn') {
+//   console.log("Scanning");
+//   noble.startScanning([uartServiceUUID], true);
+// } else {
+//   console.log("NOT SCANNING");
+//   noble.stopScanning();
+// }
 //});
 
 // noble.on('discover', function(peripheral) {
@@ -138,31 +292,3 @@ NativeAppEventEmitter.addListener(
 // //explore(peripheral);
 // //}
 // });
-    DeviceMotion.startDeviceMotionUpdates(1000/100, (data) => {
-      //console.log(data.attitude);
-      this.setState({
-        motionData: data.attitude,
-      });
-      if(txFound){
-        console.log('write');
-        var temperature = new Buffer(2);
-        temperature.writeUInt16BE(450, 0);
-        txCharacteristic.write(temperature, false,function(error){
-          console.log(error);
-        });
-      }
-    });
-  }
-
-  render(){
-    //BleManager.connect(peripheralId);
-    return(
-      <ScrollView>
-        <Text>Pitch: {this.state.motionData.pitch}</Text>
-        <Text>Yaw: {this.state.motionData.yaw}</Text>
-      </ScrollView>
-    );
-  }
-}
-
-module.exports = Calibrate
