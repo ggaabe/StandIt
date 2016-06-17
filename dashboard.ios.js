@@ -4,7 +4,7 @@ import { SegmentedControlIOS,
 View,
 Text,
   Image, } from 'react-native'
-//import Chart from 'react-native-chart';
+import Chart from 'react-native-chart';
 //import RNChart from 'react-native-chart';
 'use strict';
 
@@ -85,6 +85,13 @@ const colors = {
   pieStanding: 'rgb(0,163,46)',
 };
 
+const data = [
+    [0, 1],
+    [1, 3],
+    [3, 7],
+    [4, 9],
+];
+
 const chartRange = [4];
 const exampleArray = [1,2];
 const exampleArrayBar = [1,2,3,4,5,6]
@@ -148,7 +155,7 @@ const generateChartDataBar = (type) => {
 // <Chart style={styles.chart} chartData={this.state.pieChart} xLabels={this.state.xLabels} />
 // <Chart style={styles.bottomChart} chartData={this.state.lineChart} fillColor={colors.yellow} xLabels={this.state.xLabels} />
 
-
+var pieData;
 class Dashboard extends Component {
   constructor(props) {
 		super(props);
@@ -161,6 +168,10 @@ class Dashboard extends Component {
     const pieTotal = this.state.pieChart[0].data[0] + this.state.pieChart[0].data[1];
     this.state.pieChart[0].data[0] = Math.round((this.state.pieChart[0].data[0] / pieTotal) * 100);
     this.state.pieChart[0].data[1] = Math.round((this.state.pieChart[0].data[1] / pieTotal) * 100);
+    pieData = [
+      [0, this.state.pieChart[0].data[0]],
+      [1, this.state.pieChart[0].data[1]]
+    ];
 	}
     render() {
 	return (
@@ -195,6 +206,7 @@ class Dashboard extends Component {
            </Text>
           </View>
 
+          <Chart style={styles.chart} data={pieData} showAxis={false} type="pie" sliceColors={['rgb(41,116,231)', 'rgb(0,163,46)']}/>
 
             <View style={styles.personPercentageContainer}>
               <Image
@@ -206,9 +218,14 @@ class Dashboard extends Component {
                   {this.state.pieChart[0].data[1]}%
                </Text>
             </View>
+
     </View>
-
-
+    <Chart
+           style={styles.bottomChart}
+           data={data}
+           verticalGridStep={5}
+           type="line"
+        />
 
       </View>
 		);
