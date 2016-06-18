@@ -253,7 +253,7 @@ class Settings extends Component {
           this.props.navigator.pop()},
         passProps: {
           updateUnits: this.updateUnits,
-          context: settingsContext,
+
           metric: this.state.metric,
         }
     })

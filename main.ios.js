@@ -1,15 +1,19 @@
 import React, {Component} from 'react';
 import {
+  AsyncStorage,
   Picker,
   StyleSheet,
 View,
 Text,
   Image,
   Dimensions,
+  TouchableHighlight,
+  NativeAppEventEmitter,
 } from 'react-native';
 'use strict';
 
-//var React = require('react-native');
+var BleManager = require('./BleManager');
+var Buffer = require('buffer/').Buffer;
 
 var styles = StyleSheet.create({
 	description: {
@@ -80,17 +84,127 @@ var sittingButton = function() {
   }
  }
 
+ const peripheralId = "85329480-7A7F-32BF-91A2-FFAF31510A96";
+ const uartServiceUUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
+ const txCharacteristicUUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+ const rxCharacteristicUUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+const STANDING_HEIGHT_KEY = "standingHeightKey";
+const SITTING_HEIGHT_KEY = "sittingHeightKey";
 
 class Main extends Component {
+
+  constructor(props: Object): void {
+       super(props);
+       this.state = {
+         standingHeight: '',
+         sittingHeight: '',
+       };
+   }
+
+  componentWillMount() {
+        // AsyncStorage.getItem("height").then((value) => {
+        //     this.setState({"height": value});
+        // }).done();
+        this._loadInitialState().done();
+        BleManager.scan([uartServiceUUID], 5)
+      .then(() => {
+        // Success code
+        console.log('Scan started');
+      });
+        NativeAppEventEmitter.addListener(
+            'BleManagerDiscoverPeripheral',
+            (args) => {
+                // The id: args.id
+                // The name: args.name
+                BleManager.connect(peripheralId).then(() => {
+                // Success code
+                console.log('Connected');
+                var data = Buffer("Good lord").toString('base64');
+                //ask SO question: Why doesn't react-native support WindowBase64 .btoa methods?
+                BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
+                  console.log("holy fuck.");
+                });
+
+              }).catch((error) => {
+                // Failure code
+                console.log('Didn\'t Connect');
+                console.log(error);
+              });
+            }
+        );
+    }
+
+  async _loadInitialState() {
+    try {
+      AsyncStorage.getItem(STANDING_HEIGHT_KEY).then((value) => {
+        if (value !== null){
+          var splitStanding = value.split(".");
+          this.setState({
+            standingHeight: value,
+            pickerValue: splitStanding[0],
+            pickerValueDecimal: splitStanding[1],
+          });
+
+      }else{
+        var defaultStandingHeight = "30.0".split(".");
+        this.setState({
+          standingHeight: "30.0",
+          pickerValue: defaultStandingHeight[0],
+          pickerValueDecimal: defaultStandingHeight[1]
+        });
+
+        AsyncStorage.setItem(STANDING_HEIGHT_KEY, "30.0");
+      }
+      });
+      AsyncStorage.getItem(SITTING_HEIGHT_KEY).then((value) => {
+        if (value !== null){
+          this.setState({sittingHeight: value});
+      }else{
+        this.setState({sittingHeight: "30.0"})
+        AsyncStorage.setItem(SITTING_HEIGHT_KEY, "30.0");
+      }
+      });
+    } catch (error) {
+      console.log('AsyncStorage error: ' + error.message);
+    }
+  }
+
+  async setStorage(key, settings) {
+    try {
+      await AsyncStorage.setItem(key, settings);
+     }
+     catch (error) {
+      this._appendMessage('AsyncStorage error: ' + error.message);
+    }
+  }
+
     render() {
 	return (
 
 	  <View style={styles.container}>
+      <TouchableHighlight underlayColor="white" onPress={function() {
+          console.log("hoo");
+          try{
+          var data = Buffer(this.state.pickerValue).toString('base64');
+          BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
+            console.log("holy fuck.");
+          })} catch(error){
+            console.log(error)
+          }
+
+        }.bind(this)}
+        onLongPress={function() {
+          console.log("hiiii");
+          var settings = [this.state.pickerValue, this.state.pickerValueDecimal].join(".");
+          this.setStorage(STANDING_HEIGHT_KEY, settings);
+        }.bind(this)}>
         <Image
         resizeMode='cover'
         style={[styles.standitButton, standingButton()]}
         source={require('./standing.png')}
       />
+    </TouchableHighlight>
         <View style={styles.decimalPicker}>
         <Picker
           style={{
@@ -145,11 +259,27 @@ class Main extends Component {
         Inches
         </Text>
         </View>
+        <TouchableHighlight underlayColor="white" onPress={function() {
+            console.log("hoo");
+            var data = Buffer(this.state.pickerValue).toString('base64');
+            try{
+            BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
+              console.log("holy fuck.");
+            });} catch(error){
+              console.log(error)
+            }
+          }.bind(this)}
+          onLongPress={function() {
+            console.log("hiiii");
+            var settings = [this.state.pickerValue, this.state.pickerValueDecimal].join(".");
+            this.setStorage(SITTING_HEIGHT_KEY, settings);
+          }.bind(this)}>
         <Image
         resizeMode='cover'
         style={[styles.standitButton, sittingButton()]}
         source={require('./sitting.png')}
       />
+    </TouchableHighlight>
       </View>
 		);
     }

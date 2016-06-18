@@ -58,17 +58,7 @@ class Project extends Component {
           }}>
           <Dashboard/>
         </TabBarIOS.Item>
-        <TabBarIOS.Item
-          selected={this.state.selectedTab === 'voice'}
-          icon={{uri: voiceIcon, scale: 2}}
-          title="Voice"
-          onPress={() => {
-                this.setState({
-                    selectedTab: 'voice',
-                });
-          }}>
-          <Dashboard/>
-        </TabBarIOS.Item>
+
         <TabBarIOS.Item
           selected={this.state.selectedTab === 'settings'}
           icon={{uri: settingsIcon, scale: 2}}
@@ -117,3 +107,15 @@ const styles = StyleSheet.create({
 });
 
 AppRegistry.registerComponent('StdIt', () => Project);
+
+// <TabBarIOS.Item
+//   selected={this.state.selectedTab === 'voice'}
+//   icon={{uri: voiceIcon, scale: 2}}
+//   title="Voice"
+//   onPress={() => {
+//         this.setState({
+//             selectedTab: 'voice',
+//         });
+//   }}>
+//   <Dashboard/>
+// </TabBarIOS.Item>
