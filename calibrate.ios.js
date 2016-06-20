@@ -52,27 +52,27 @@ class Calibrate extends Component {
   });
 
 
-NativeAppEventEmitter.addListener(
-    'BleManagerDiscoverPeripheral',
-    (args) => {
-        // The id: args.id
-        // The name: args.name
-        BleManager.connect(peripheralId).then(() => {
-        // Success code
-        console.log('Connected');
-        var data = Buffer("Good lord").toString('base64');
-        //ask SO question: Why doesn't react-native support WindowBase64 .btoa methods?
-        BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
-          console.log("holy fuck.");
-        });
+    NativeAppEventEmitter.addListener(
+        'BleManagerDiscoverPeripheral',
+        (args) => {
+            // The id: args.id
+            // The name: args.name
+            BleManager.connect(peripheralId).then(() => {
+            // Success code
+            console.log('Connected');
+            var data = Buffer("Good lord").toString('base64');
+            //ask SO question: Why doesn't react-native support WindowBase64 .btoa methods?
+            BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
+              console.log("holy fuck.");
+            });
 
-      }).catch((error) => {
-        // Failure code
-        console.log('Didn\'t Connect');
-        console.log(error);
-      });
-    }
-);
+          }).catch((error) => {
+            // Failure code
+            console.log('Didn\'t Connect');
+            console.log(error);
+          });
+        }
+    );
 
     DeviceMotion.startDeviceMotionUpdates(1000/100, (data) => {
       //console.log(data.attitude);
@@ -81,10 +81,10 @@ NativeAppEventEmitter.addListener(
       });
       if(txFound){
         //var writeData = Buffer("Good lord").toString('base64');
-        var rollAdjusted = this.state.motionData.roll - cachedFloorCalibrationOffset.roll;
-        var pitchAdjusted = this.state.motionData.pitch - cachedFloorCalibrationOffset.pitch;
-        var rollAdjusted = this.round(rollAdjusted, 4);
-        var pitchAdjusted = this.round(pitchAdjusted, 4);
+        var rollAdjusted = (this.state.motionData.roll - cachedFloorCalibrationOffset.roll) * 57.2958;
+        var pitchAdjusted = (this.state.motionData.pitch - cachedFloorCalibrationOffset.pitch) * 57.2958;
+        var rollAdjusted = this.round(rollAdjusted, 2);
+        var pitchAdjusted = this.round(pitchAdjusted, 2);
         var writeString = "R" + rollAdjusted.toString() + "P" + pitchAdjusted.toString();
         var writeData = Buffer(writeString).toString('base64');
         //can probably run this until difference between state.pitch/roll and adjusted pitch/roll is less than 0.01
@@ -95,6 +95,23 @@ NativeAppEventEmitter.addListener(
         //IMPLEMENT CONTROL LOGIC HERE TO READ FROM RXCHARACTERISTIC TO RECEIVE THE DONE MESSAGE.
       }
     });
+  }
+
+  componentWillUnmount(){
+    BleManager.disconnect(peripheralId).then(() => {
+    // Success code
+    console.log('Connected');
+    var data = Buffer("Good lord").toString('base64');
+    //ask SO question: Why doesn't react-native support WindowBase64 .btoa methods?
+    BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
+      console.log("holy fuck.");
+    });
+
+  }).catch((error) => {
+    // Failure code
+    console.log('Didn\'t Connect');
+    console.log(error);
+  });
   }
 
   round(value, precision) {
@@ -160,7 +177,6 @@ const styles = StyleSheet.create({
     //justifyContent: 'center',
     backgroundColor: 'rgb(24,24,26)',
     alignItems: 'center',
-
   },
   textStyle: {
     marginTop: 5,

@@ -179,6 +179,15 @@ class Main extends Component {
     }
   }
 
+  convertToCentimeters(inches){
+    return inches * 2.54;
+  }
+
+  round(value, precision) {
+      var multiplier = Math.pow(10, precision || 0);
+      return Math.round(value * multiplier) / multiplier;
+  }
+
     render() {
 	return (
 
@@ -186,7 +195,8 @@ class Main extends Component {
       <TouchableHighlight underlayColor="white" onPress={function() {
           console.log("hoo");
           try{
-          var data = Buffer(this.state.pickerValue).toString('base64');
+            var settings = "H" + (this.convertToCentimeters([this.state.pickerValue, this.state.pickerValueDecimal].join(".")).toString());
+            var data = Buffer(settings).toString('base64');
           BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
             console.log("holy fuck.");
           })} catch(error){
@@ -194,6 +204,7 @@ class Main extends Component {
           }
 
         }.bind(this)}
+        delayLongPress={2500}
         onLongPress={function() {
           console.log("hiiii");
           var settings = [this.state.pickerValue, this.state.pickerValueDecimal].join(".");
@@ -261,7 +272,8 @@ class Main extends Component {
         </View>
         <TouchableHighlight underlayColor="white" onPress={function() {
             console.log("hoo");
-            var data = Buffer(this.state.pickerValue).toString('base64');
+            var settings = "H" + (this.convertToCentimeters([this.state.pickerValue, this.state.pickerValueDecimal].join(".")).toString());
+            var data = Buffer(settings).toString('base64');
             try{
             BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
               console.log("holy fuck.");
@@ -269,6 +281,7 @@ class Main extends Component {
               console.log(error)
             }
           }.bind(this)}
+          delayLongPress={2500}
           onLongPress={function() {
             console.log("hiiii");
             var settings = [this.state.pickerValue, this.state.pickerValueDecimal].join(".");
