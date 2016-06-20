@@ -195,7 +195,7 @@ class Main extends Component {
       <TouchableHighlight underlayColor="white" onPress={function() {
           console.log("hoo");
           try{
-            var settings = "H" + (this.convertToCentimeters([this.state.pickerValue, this.state.pickerValueDecimal].join(".")).toString());
+            var settings = "H" + (this.round(this.convertToCentimeters([this.state.pickerValue, this.state.pickerValueDecimal].join(".")), 2).toString());
             var data = Buffer(settings).toString('base64');
           BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
             console.log("holy fuck.");
@@ -272,7 +272,7 @@ class Main extends Component {
         </View>
         <TouchableHighlight underlayColor="white" onPress={function() {
             console.log("hoo");
-            var settings = "H" + (this.convertToCentimeters([this.state.pickerValue, this.state.pickerValueDecimal].join(".")).toString());
+            var settings = "H" + (this.round(this.convertToCentimeters([this.state.pickerValue, this.state.pickerValueDecimal].join(".")), 2).toString());
             var data = Buffer(settings).toString('base64');
             try{
             BleManager.write(peripheralId, uartServiceUUID, txCharacteristicUUID, data).then(() => {
