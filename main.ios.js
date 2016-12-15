@@ -88,6 +88,11 @@ var sittingButton = function() {
  const uartServiceUUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
  const txCharacteristicUUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
  const rxCharacteristicUUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+ //TruConnect
+// #define SERVICE_TRUCONNECT_UUID                        @"175f8f23-a570-49bd-9627-815a6a27de2a"
+// #define CHARACTERISTIC_TRUCONNECT_PERIPHERAL_RX_UUID   @"1cce1ea8-bd34-4813-a00a-c76e028fadcb"
+// #define CHARACTERISTIC_TRUCONNECT_PERIPHERAL_TX_UUID   @"cacc07ff-ffff-4c48-8fae-a9ef71b75e26"
+// #define CHARACTERISTIC_TRUCONNECT_MODE_UUID            @"20b9794f-da1a-4d14-8014-a0fb9cefb2f7"
 
 const STANDING_HEIGHT_KEY = "standingHeightKey";
 const SITTING_HEIGHT_KEY = "sittingHeightKey";
